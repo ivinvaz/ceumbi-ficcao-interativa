@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sobreviva ao CEUMBI!</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{--sujo:#1b1f16;--ferrugem:#7a4a26;--texto:#c9d1a8;--painel:#1f3324}
+*{box-sizing:border-box}
+body{margin:0;padding:14px;min-height:100vh;color:var(--texto);
+  font-family:'Press Start 2P','Courier New',monospace;
+  background:radial-gradient(ellipse at 50% 0%,#24402c 0%,#101b13 75%) fixed}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px)}
+.jogo{max-width:780px;margin:0 auto}
+h1{margin:6px 0 16px;text-align:center;font-size:clamp(16px,4.2vw,28px);line-height:1.5;
+  color:#9bb35a;text-shadow:3px 3px 0 #3b1d0f,-1px -1px 0 #000;animation:tremer 5s infinite}
+@keyframes tremer{0%,90%,100%{opacity:1}92%{opacity:.45}94%{opacity:1}97%{opacity:.7}}
+@media (prefers-reduced-motion:reduce){h1{animation:none}}
+.painel{border:4px ridge var(--ferrugem);box-shadow:6px 6px 0 #000;
+  background:radial-gradient(circle at 10% 15%,rgba(122,74,38,.28),transparent 35%),
+             radial-gradient(circle at 90% 85%,rgba(0,0,0,.4),transparent 40%),var(--sujo)}
+.barra{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:10px 12px;margin-bottom:12px;font-size:14px;min-height:50px}
+#mochila{text-align:right;font-size:12px}
+#texto{padding:18px;min-height:210px;font-size:12px;line-height:1.9;white-space:pre-line;
+  background-color:var(--painel)}
+#aviso{min-height:1.6em;margin-top:10px;font-size:10px;line-height:1.6;color:#e0b94a}
+#opcoes{display:grid;gap:10px;margin-top:6px}
+.opcao,.voltar,.reiniciar{font:inherit;font-size:11px;line-height:1.7;cursor:pointer;
+  padding:13px 14px;border:4px solid #0b0b0b;box-shadow:4px 4px 0 #000;text-align:left;
+  display:flex;flex-direction:column;gap:6px}
+.opcao:hover,.voltar:hover,.reiniciar:hover{transform:translate(2px,2px);box-shadow:2px 2px 0 #000}
+.exige{font-size:20px}
+.cinza{background:#5c5f58;color:#d8d8d0}
+.verde{background:#3e6b35;color:#e3f0c8}
+.amarelo{background:#b39129;color:#1e1800}
+.vermelho{background:#802a20;color:#f1d5cf}
+.laranja{background:#bb631f;color:#1f0f00}
+.voltar,.reiniciar{margin-top:12px;width:100%;background:#4a3b2a;color:#d9c8a0;text-align:center}
+.voltar:disabled{opacity:.4;cursor:not-allowed;transform:none}
+[hidden]{display:none!important}
+.legenda{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:20px;font-size:8px;line-height:1.6;opacity:.85}
+.legenda span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:6px;border:2px solid #000}
+.legenda .l1::before{background:#5c5f58}.legenda .l2::before{background:#3e6b35}
+.legenda .l3::before{background:#b39129}.legenda .l4::before{background:#802a20}
+.legenda .l5::before{background:#bb631f}
+</style>
+</head>
+<body>
+<main class="jogo">
+  <h1>🧟 Sobreviva ao CEUMBI! 🧟</h1>
+
+  <div class="painel barra">
+    <div id="coracoes" aria-label="Vida"></div>
+    <div id="mochila" aria-label="Mochila"></div>
+  </div>
+
+  <div id="texto" class="painel"></div>
+  <div id="aviso" role="status"></div>
+  <div id="opcoes"></div>
+  <button id="voltar" class="voltar" onclick="voltar()">⬅ Voltar</button>
+  <button id="reiniciar" class="reiniciar" onclick="recomecar()" hidden>Recomeçar</button>
+
+  <div class="legenda">
+    <span class="l1">Inexplorada</span><span class="l2">Explorada (pode voltar)</span>
+    <span class="l3">Precisa de item</span><span class="l4">Fatal</span><span class="l5">Sem volta</span>
+  </div>
+</main>
+
+<!-- ESTA LINHA TEM QUE VIR ANTES DOS ARQUIVOS DA EQUIPE -->
+<script>const CENAS = {};</script>
+
+<!-- Arquivos da equipe (um por pessoa) -->
+<script src="js/estado.js"></script>
+<script src="js/mochila.js"></script>
+<script src="js/vida.js"></script>
+<script src="js/cenas1.js"></script>
+<script src="js/cenas2.js"></script>
+<script src="js/botoes.js"></script>
+<script src="js/motor.js"></script>
+
+<script>
+// Verifica se todas as funções combinadas existem antes de começar
+const FUNCOES = ['novoJogo','morrer','temItens','pegarItem','desenharMochila',
+  'perderVida','desenharVida','mostrarFinal','corDoBotao','desenharOpcoes',
+  'entrarNaCena','escolherOpcao','voltar'];
+
+function recomecar() {
+  const atual = CENAS[estado.cena];
+  if (atual && atual.final === 'bom') novoJogo(); else morrer();
+  entrarNaCena('inicio');
+}
+
+const faltando = FUNCOES.filter(f => typeof window[f] !== 'function');
+if (faltando.length > 0) {
+  document.getElementById('texto').textContent =
+    '⚠ Ainda faltam funções:\n\n' + faltando.join('\n');
+  document.getElementById('voltar').hidden = true;
+} else if (!CENAS.inicio) {
+  document.getElementById('texto').textContent = '⚠ Falta a cena "inicio" em cenas1.js';
+} else {
+  novoJogo();
+  entrarNaCena('inicio');
+}
+</script>
+</body>
+</html>
